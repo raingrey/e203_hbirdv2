@@ -25,6 +25,7 @@ ${RUN_DIR}:
 	mkdir -p ${RUN_DIR}
 	rm -f ${RUN_DIR}/Makefile
 	ln -s ${SIM_DIR}/bin/run.makefile ${RUN_DIR}/Makefile
+	cp ${SIM_DIR}/../hex.bin ${RUN_DIR}/hex.bin
 
 compile: ${RUN_DIR}
 	make compile RUN_DIR=${RUN_DIR} SIM_TOOL=${SIM} -C ${RUN_DIR}

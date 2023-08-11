@@ -221,6 +221,7 @@ module tb_top();
      $finish;
   end
 
+
   initial begin
     #40000000
         $display("Time Out !!!");
@@ -236,10 +237,6 @@ module tb_top();
   begin 
      #33 lfextclk <= ~lfextclk;
   end
-
-
-
-  
   
   initial begin
     if($value$plusargs("DUMPWAVE=%d",dumpwave)) begin
@@ -353,7 +350,74 @@ e203_soc_top u_e203_soc_top(
     .io_pads_dbgmode2_n_i_ival       (1'b1) 
 );
 
+//IFUTETSCASE
+  reg[1024:1] ifutestcase;
+  initial begin
+    $display("````````````````````````````````````````````````");  
+    if($value$plusargs("IFUTESTCASE=%s",ifutestcase))begin
+      $display("IFUTESTCASE=%s",ifutestcase);
+    end
 
+  end
+
+  `define IFU_RAM_NUM 1024
+    reg [`IFU_DATA_WIDTH-1:0] ifu_mem [0:(`IFU_RAM_NUM)-1];
+    initial begin
+      $readmemh({ifutestcase}, ifu_mem);
+
+        $display("IFU_RAM 0x00: %h", ifu_mem[0]);
+        $display("IFU_RAM 0x04: %h", ifu_mem[1]);
+        $display("IFU_RAM 0x08: %h", ifu_mem[2]);
+        $display("IFU_RAM 0x0c: %h", ifu_mem[3]);
+        $display("IFU_RAM 0x10: %h", ifu_mem[4]);
+        $display("IFU_RAM 0x14: %h", ifu_mem[5]);
+        $display("IFU_RAM 0x18: %h", ifu_mem[6]);
+        $display("IFU_RAM 0x1c: %h", ifu_mem[7]);
+
+    end 
+
+  reg [`IFU_DATA_WIDTH-1:0] ifu_data;
+  wire [`IFU_ADDR_WIDTH-1:0] ifu_addr;
+  wire ifu_ar_vld;
+  wire ifu_rdy;
+  reg ifu_vld;
+  reg late_ifu_vld;
+  wire ar_en;
+  assign ar_en = ifu_ar_vld;
+  wire d_r_en;
+  assign d_r_en = ifu_vld & ifu_rdy;
+
+  always @(posedge hfclk or negedge rst_n)
+  begin 
+    if(rst_n == 1'b0) begin
+      ifu_data <= 32'b0;
+    end
+    else if (ar_en) begin
+      ifu_data <= ifu_mem[ifu_addr];
+      ifu_vld <= 1'b1;
+    end
+  end
+  always @(posedge hfclk or negedge rst_n)
+  begin 
+    if(rst_n == 1'b0) begin
+      ifu_vld <= 1'b0;
+    end
+    else if (d_r_en) begin
+      ifu_vld <= 1'b0;
+    end
+  end
+
+  ifu_mod u_ifu_mod(
+    .ifu2bus_ar(ifu_addr),
+    .ifu2bus_ar_valid(ifu_ar_vld),
+    .ifu2bus_ar_ready(1'b1),
+    .ifu2bus_r_valid(ifu_vld),
+    .ifu2bus_r_ready(ifu_rdy),
+    .ifu2bus_data(ifu_data),
+
+    .clk(hfclk),
+    .rst_n(rst_n)//This is the real reset, active low
+  );
 endmodule
 
 

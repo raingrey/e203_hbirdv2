@@ -1,6 +1,7 @@
 RUN_DIR      := ${PWD}
 
 TESTCASE     := ${RUN_DIR}/../../riscv-tools/riscv-tests/isa/generated/rv32ui-p-addi
+IFUTESTCASE     := ${RUN_DIR}/hex.bin
 DUMPWAVE     := 1
 
 SMIC130LL    := 0
@@ -128,7 +129,7 @@ wave:
 run: compile
 	rm -rf ${TEST_RUNDIR}
 	mkdir ${TEST_RUNDIR}
-	cd ${TEST_RUNDIR}; ${SIM_EXEC} +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +SIM_TOOL=${SIM_TOOL} |& tee ${TESTNAME}.log; cd ${RUN_DIR}; 
+	cd ${TEST_RUNDIR}; ${SIM_EXEC} +DUMPWAVE=${DUMPWAVE} +TESTCASE=${TESTCASE} +IFUTESTCASE=${IFUTESTCASE} +SIM_TOOL=${SIM_TOOL} |& tee ${TESTNAME}.log; cd ${RUN_DIR}; 
 
 
 .PHONY: run clean all 
